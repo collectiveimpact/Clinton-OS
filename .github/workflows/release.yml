@@ -304,7 +304,7 @@ jobs:
         with:
           projectPath: app/apps/desktop
           tagName: v__VERSION__
-          releaseName: 'Baalda v__VERSION__'
+          releaseName: 'Clinton-OS v__VERSION__'
           releaseBody: ${{ steps.relnotes.outputs.body }}
           releaseDraft: false
           prerelease: false
@@ -329,7 +329,7 @@ jobs:
         with:
           projectPath: app/apps/desktop
           tagName: v__VERSION__
-          releaseName: 'Baalda v__VERSION__'
+          releaseName: 'Clinton-OS v__VERSION__'
           releaseBody: ${{ steps.relnotes.outputs.body }}
           releaseDraft: false
           prerelease: false

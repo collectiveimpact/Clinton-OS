@@ -1,6 +1,6 @@
 [package]
 name = "desktop"
-version = "0.1.47"
+version = "0.2.0"
 description = "Clinton-OS, local-first team brain for Business Solutions and Fuse5"
 authors = ["Clinton Reid"]
 license = "Apache-2.0"
