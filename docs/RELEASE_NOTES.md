@@ -5,7 +5,7 @@ First Clinton-OS release, forked from Baalda 0.1.47 (upstream commit 8e261b3, Ap
 - Rebranded to Clinton-OS under docs/BRANDING.md Layer 1. Storage identifiers, the context codename and the com.baalda.context bundle id are unchanged, so an existing Baalda install keeps its vaults and keychain entry.
 - Fuse5 design system: near black base, orange accent with ink text, cyan data signal, Poppins.
 - Text wordmark replaces the image logo.
-- Updater now follows the clinton-reid/clinton-os GitHub releases with a new signing key.
+- Updater now follows the collectiveimpact/Clinton-OS GitHub releases with a new signing key.
 - Deploy kit for AWS ca-central-1 in deploy/aws-ca-central-1, plus the operations console.
 
 - Folder badges now count only the notes that actually need syncing (for example "1/2" for two new files), instead of the folder's whole population ("186/187")

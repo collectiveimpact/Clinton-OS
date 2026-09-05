@@ -9,13 +9,13 @@ One EC2 host in ca-central-1 (Montreal) runs Postgres, the sync server, Caddy fo
 
 - AWS account with the CLI signed in (aws sts get-caller-identity returns your account).
 - A domain you control. Example used below: brain.clinton-os.ca.
-- The fork pushed to GitHub. Example: https://github.com/clinton-reid/clinton-os.git. A private repo needs a deploy key on the instance. Public is simpler.
+- The fork pushed to GitHub. Example: https://github.com/collectiveimpact/Clinton-OS.git. A private repo needs a deploy key on the instance. Public is simpler.
 
 ## Run
 
 ```
 cd deploy/aws-ca-central-1
-./deploy.sh brain.clinton-os.ca https://github.com/clinton-reid/clinton-os.git
+./deploy.sh brain.clinton-os.ca https://github.com/collectiveimpact/Clinton-OS.git
 ```
 
 The script creates, in order: the S3 backup bucket with 30 day expiry and public access blocked, an instance role limited to that bucket plus SSM, a security group with 80 and 443 only, an Ubuntu 24.04 arm64 t4g.small with a 30 GB encrypted gp3 volume, an Elastic IP, and a daily EBS snapshot policy. Cloud init installs Docker, clones the fork, generates POSTGRES_PASSWORD and JWT_SECRET on the box, and starts the stack.
@@ -66,7 +66,7 @@ Migrations run before the server starts on every deploy. They are idempotent.
 
 ## Desktop release for the fork
 
-The desktop app auto updates from the endpoint in tauri.conf.json, now set to the clinton-reid/clinton-os GitHub releases. Before the first release:
+The desktop app auto updates from the endpoint in tauri.conf.json, now set to the collectiveimpact/Clinton-OS GitHub releases. Before the first release:
 
 1. Generate a signing key: pnpm tauri signer generate -w ~/.tauri/clinton-os.key
 2. Paste the public key into tauri.conf.json plugins.updater.pubkey (currently a placeholder that fails the build on purpose).

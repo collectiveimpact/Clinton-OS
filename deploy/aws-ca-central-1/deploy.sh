@@ -3,7 +3,7 @@
 # instance role scoped to that bucket. Run from a machine with the AWS CLI signed in
 # to Clinton's account. Nothing here prints or stores credentials.
 #
-#   ./deploy.sh brain.clinton-os.ca https://github.com/clinton-reid/clinton-os.git
+#   ./deploy.sh brain.clinton-os.ca https://github.com/collectiveimpact/Clinton-OS.git
 #
 # After it finishes, point DOMAIN at the printed Elastic IP (A record) and wait for
 # Caddy to issue the certificate (about a minute after DNS resolves).

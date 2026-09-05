@@ -9,7 +9,7 @@ Outcome: a Clinton-OS v0.2.0 release on your GitHub with a macOS arm64 DMG, macO
 
 ```
 cd clinton-os
-git remote add origin https://github.com/clinton-reid/clinton-os.git
+git remote add origin https://github.com/collectiveimpact/Clinton-OS.git
 git branch -M main
 git push -u origin main
 ```

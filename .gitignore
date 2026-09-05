@@ -31,3 +31,4 @@ logs/
 
 # Claude session runtime lock
 .claude/scheduled_tasks.lock
+keys/
