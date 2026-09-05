@@ -283,7 +283,7 @@ jobs:
       # An `if:` on the whole step cannot misfire.
 
       - name: Build, sign and notarize
-        if: steps.cfg.outputs.notarize == 'true'
+        if: steps.cfg.outputs.notarize == 'true' && secrets.APPLE_CERTIFICATE != ''
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -317,7 +317,7 @@ jobs:
       # (it verifies the minisign signature, not Apple's ticket); only fresh
       # downloads prompt, and right-click → Open clears it.
       - name: Build and sign (notarization skipped)
-        if: steps.cfg.outputs.notarize != 'true'
+        if: steps.cfg.outputs.notarize != 'true' && secrets.APPLE_CERTIFICATE != ''
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -326,6 +326,29 @@ jobs:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+        with:
+          projectPath: app/apps/desktop
+          tagName: v__VERSION__
+          releaseName: 'Clinton-OS v__VERSION__'
+          releaseBody: ${{ steps.relnotes.outputs.body }}
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}
+
+      # No Apple Developer ID yet. Pass NO APPLE_* variables at all: a GitHub
+      # expression for a missing secret yields an empty string, and an empty
+      # APPLE_CERTIFICATE makes tauri attempt a keychain import that fails the
+      # whole macOS job (that is what broke Clinton-OS release run #2). With the
+      # variables absent and signingIdentity "-" in tauri.conf.json, tauri
+      # ad hoc signs the bundle. First launch needs right click, Open once.
+      # The updater signature (minisign) is still applied, so auto update works.
+      - name: Build, ad hoc signed (no Apple secrets present)
+        if: secrets.APPLE_CERTIFICATE == ''
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: app/apps/desktop
           tagName: v__VERSION__
