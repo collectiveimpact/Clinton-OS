@@ -1,0 +1,248 @@
+<title>Clinton-OS Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --ground: #0B0B0E; --surface: #16161B; --well: #111115; --line: rgba(237,237,240,0.09); --line-strong: rgba(237,237,240,0.18);
+    --ink: #EDEDF0; --ink-2: #A3A3AE; --ink-3: #6E6E78;
+    --accent: #FB5717; --accent-ink: #0B0B0E; --accent-text: #FF8A55; --accent-soft: rgba(251,87,23,0.14);
+    --signal: #00B6B2; --signal-soft: rgba(0,182,178,0.14);
+    --good: #3CB883; --warn: #F0B429; --crit: #E5484D;
+    --good-soft: rgba(60,184,131,0.16); --warn-soft: rgba(240,180,41,0.16); --crit-soft: rgba(229,72,77,0.16);
+    --display: "Poppins", "Radio Canada Big", -apple-system, sans-serif;
+    --body: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace;
+    --r: 10px; --r-lg: 14px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      color-scheme: light;
+      --ground: #F3F3F5; --surface: #FFFFFF; --well: #EBEBEF; --line: rgba(11,11,14,0.09); --line-strong: rgba(11,11,14,0.18);
+      --ink: #0B0B0E; --ink-2: #55555F; --ink-3: #8B8B96;
+      --accent-text: #C94508; --accent-soft: rgba(251,87,23,0.12);
+      --signal: #008F8C; --signal-soft: rgba(0,143,140,0.12);
+      --good: #1F8F5C; --warn: #A66A00; --crit: #C43A3E;
+    }
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --ground: #F3F3F5; --surface: #FFFFFF; --well: #EBEBEF; --line: rgba(11,11,14,0.09); --line-strong: rgba(11,11,14,0.18);
+    --ink: #0B0B0E; --ink-2: #55555F; --ink-3: #8B8B96;
+    --accent-text: #C94508; --accent-soft: rgba(251,87,23,0.12);
+    --signal: #008F8C; --signal-soft: rgba(0,143,140,0.12);
+    --good: #1F8F5C; --warn: #A66A00; --crit: #C43A3E;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: var(--signal); }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 28px 24px 64px; display: grid; gap: 24px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: baseline; gap: 10px; }
+  .brand h1 { font-family: var(--display); font-weight: 700; font-size: 26px; letter-spacing: -0.03em; margin: 0; line-height: 1; }
+  .brand .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--signal); box-shadow: 0 0 10px var(--signal); }
+  .brand small { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+  .stamp { font-family: var(--mono); font-size: 12px; color: var(--ink-2); text-align: right; }
+  .stamp b { color: var(--ink); font-weight: 500; }
+
+  .strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+  .strip > div { background: var(--surface); padding: 14px 16px; display: grid; gap: 4px; }
+  .k { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+  .v { font-family: var(--display); font-weight: 600; font-size: 18px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 8px; }
+  .v .sub { font-family: var(--mono); font-weight: 400; font-size: 12px; color: var(--ink-2); }
+
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 500; line-height: 1.6; white-space: nowrap; }
+  .pill svg { width: 12px; height: 12px; }
+  .ok { background: var(--good-soft); color: var(--good); }
+  .warn { background: var(--warn-soft); color: var(--warn); }
+  .crit { background: var(--crit-soft); color: var(--crit); }
+  .live { background: var(--signal-soft); color: var(--signal); }
+  .att { background: var(--accent-soft); color: var(--accent-text); }
+  .muted { background: var(--well); color: var(--ink-2); }
+
+  h2 { font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: 0.01em; margin: 0; display: flex; align-items: baseline; gap: 10px; }
+  h2 .n { font-family: var(--mono); font-weight: 400; font-size: 12px; color: var(--ink-3); }
+  section { display: grid; gap: 12px; }
+  .two { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 24px; }
+  @media (max-width: 900px) { .two { grid-template-columns: 1fr; } }
+
+  .brains { display: grid; gap: 12px; }
+  .brain { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 16px 18px; display: grid; gap: 14px; position: relative; }
+  .brain.needs { border-left: 3px solid var(--accent); }
+  .brain header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .brain h3 { margin: 0; font-family: var(--display); font-weight: 600; font-size: 16px; letter-spacing: -0.01em; }
+  .brain h3 span { font-family: var(--mono); font-weight: 400; font-size: 12px; color: var(--ink-3); margin-left: 8px; }
+  .facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 640px) { .facts { grid-template-columns: repeat(2, 1fr); } }
+  .fact { display: grid; gap: 2px; }
+  .fact .v { font-size: 20px; }
+  .fact .k { font-size: 10.5px; }
+  .note { font-size: 13px; color: var(--ink-2); margin: 0; }
+  .note code { font-family: var(--mono); font-size: 12px; color: var(--ink); background: var(--well); padding: 1px 5px; border-radius: 4px; }
+
+  .timeline { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 6px 0; }
+  .slot { display: grid; grid-template-columns: 62px 1fr auto; gap: 12px; align-items: center; padding: 10px 18px; border-top: 1px solid var(--line); }
+  .slot:first-child { border-top: 0; }
+  .slot time { font-family: var(--mono); font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .slot .who { font-size: 13px; }
+  .slot .who b { font-weight: 600; }
+  .slot .who span { display: block; font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); }
+  .slot.next { background: var(--signal-soft); }
+  .slot.next time { color: var(--signal); font-weight: 500; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tablewrap { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); overflow-x: auto; }
+  th { text-align: left; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; padding: 12px 16px; border-bottom: 1px solid var(--line-strong); white-space: nowrap; }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  td.mono, .mono { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  td b { font-weight: 600; }
+  .grant { display: inline-block; font-family: var(--mono); font-size: 11.5px; padding: 1px 6px; border-radius: 4px; background: var(--well); color: var(--ink-2); margin: 1px 2px 1px 0; }
+  .grant.e { color: var(--accent-text); background: var(--accent-soft); }
+  .grant.d { color: var(--crit); background: var(--crit-soft); text-decoration: line-through; }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  button { font: inherit; font-weight: 600; border: 0; border-radius: 999px; padding: 9px 16px; cursor: pointer; min-height: 40px; }
+  button.primary { background: var(--accent); color: var(--accent-ink); }
+  button.primary:hover { filter: brightness(1.06); }
+  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line-strong); }
+  button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .toast { font-size: 13px; color: var(--ink-2); }
+
+  footer { font-size: 12px; color: var(--ink-3); border-top: 1px solid var(--line); padding-top: 14px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  @media (prefers-reduced-motion: no-preference) {
+    .brand .dot { animation: pulse 2.4s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { box-shadow: 0 0 6px var(--signal); } 50% { box-shadow: 0 0 14px var(--signal); } }
+  }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Clinton-OS</h1><span class="dot" aria-hidden="true"></span>
+      <small>console · Business Solutions Brain</small>
+    </div>
+    <div class="stamp">Bootstrap snapshot <b>2026-09-04 21:30 ET</b><br>Server: local dev build v0.1.47 fork · ca-central-1 pending deploy.sh</div>
+  </header>
+
+  <div class="strip" aria-label="Server status">
+    <div><span class="k">Server health</span><span class="v"><span class="pill ok"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-6"/></svg>ok</span><span class="sub">/health 200</span></span></div>
+    <div><span class="k">Region</span><span class="v">ca-central-1 <span class="sub">Montreal</span></span></div>
+    <div><span class="k">Migrations</span><span class="v">23 <span class="sub">applied</span></span></div>
+    <div><span class="k">Tests</span><span class="v">1,130 <span class="sub">403 server · 727 desktop</span></span></div>
+    <div><span class="k">MCP tools</span><span class="v">14 <span class="sub">write path proven</span></span></div>
+    <div><span class="k">Last checkpoint</span><span class="v"><span class="pill muted">none yet</span><span class="sub">daily 23:00 after sync</span></span></div>
+  </div>
+
+  <div class="two">
+    <section aria-labelledby="brains-h">
+      <h2 id="brains-h">Brains <span class="n">2 engagement, 3 shared</span></h2>
+      <div class="brains">
+        <article class="brain needs">
+          <header>
+            <h3>hnhc-brain <span>Haldimand Norfolk Housing</span></h3>
+            <span class="pill att"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v5M6 9.5v.5"/></svg>Guard: 2 FAIL</span>
+          </header>
+          <div class="facts">
+            <div class="fact"><span class="v">23</span><span class="k">Ledger sections</span></div>
+            <div class="fact"><span class="v">Sep 4</span><span class="k">Last verified</span></div>
+            <div class="fact"><span class="v">31</span><span class="k">Open register rows</span></div>
+            <div class="fact"><span class="v">14 d</span><span class="k">Since inbound (Aug 21)</span></div>
+          </div>
+          <p class="note">Leakage: <code>current-state.md:160</code> names Tricia Lewis of Kiwanis Homes (mis-copied Sept 3 agenda email). Decision owed: allowlist with reason, or move the sentence to the ledger. Silence at threshold today.</p>
+        </article>
+        <article class="brain">
+          <header>
+            <h3>neighbours-brain <span>Neighbours</span></h3>
+            <span class="pill ok"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6l3 3 5-6"/></svg>Guard: pass</span>
+          </header>
+          <div class="facts">
+            <div class="fact"><span class="v">19</span><span class="k">Ledger sections</span></div>
+            <div class="fact"><span class="v">Sep 2</span><span class="k">Last verified</span></div>
+            <div class="fact"><span class="v">45</span><span class="k">Open register rows</span></div>
+            <div class="fact"><span class="v">4 d</span><span class="k">Since inbound (Aug 31)</span></div>
+          </div>
+          <p class="note">Inbound: weekly cadence proposed. Outbound: invoice 1065 on Aug 26. Refresh due Tuesday 07:00.</p>
+        </article>
+        <article class="brain">
+          <header>
+            <h3>Shared folders <span>brain-guard · Operations · Yardi Audit Method</span></h3>
+            <span class="pill live"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/></svg>team read</span>
+          </header>
+          <p class="note">Access plan: vault default Private. These three folders Shared. Engagement folders stay Private with named grants only. No principal holds delete_folder.</p>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="routines-h">
+      <h2 id="routines-h">Routines <span class="n">weekday cadence, ET</span></h2>
+      <div class="timeline">
+        <div class="slot next"><time>06:30</time><div class="who"><b>Morning brief</b><span>morning-brief · writes Operations/Briefs</span></div><span class="pill live">next</span></div>
+        <div class="slot"><time>07:00</time><div class="who"><b>Brain refresh</b><span>update-brain · HNHC Mon Wed Fri · Neighbours Tue Thu</span></div><span class="pill muted">scheduled</span></div>
+        <div class="slot"><time>07:30</time><div class="who"><b>Guard sweep</b><span>brain-guard · leakage, evals · blocks EOW on FAIL</span></div><span class="pill muted">scheduled</span></div>
+        <div class="slot"><time>event</time><div class="who"><b>Contact report</b><span>maya-contact-report · on Granola transcript</span></div><span class="pill muted">scheduled</span></div>
+        <div class="slot"><time>Fri 15:00</time><div class="who"><b>Silence board</b><span>brain-guard · 14 day threshold</span></div><span class="pill muted">scheduled</span></div>
+        <div class="slot"><time>Fri 16:00</time><div class="who"><b>EOW dashboards</b><span>maya-eow · Internal, External, Board</span></div><span class="pill muted">scheduled</span></div>
+        <div class="slot"><time>23:00</time><div class="who"><b>Vault checkpoint</b><span>server · keeps 5</span></div><span class="pill muted">built in</span></div>
+        <div class="slot"><time>23:15</time><div class="who"><b>Postgres dump to S3</b><span>server · keeps 30 · ca-central-1</span></div><span class="pill muted">built in</span></div>
+      </div>
+    </section>
+  </div>
+
+  <section aria-labelledby="principals-h">
+    <h2 id="principals-h">Principals <span class="n">one token, one account, one vault each</span></h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Principal</th><th>Account</th><th>Grants</th><th>Tools</th><th>Token</th><th>Calls</th></tr></thead>
+        <tbody>
+          <tr><td><b>update-brain</b></td><td class="mono">agent-update-brain</td><td><span class="grant e">hnhc-brain edit</span><span class="grant e">neighbours-brain edit</span><span class="grant">Operations view</span></td><td class="mono">read, search, append, edit, create</td><td><span class="pill live">mcp_0R8VTS… dev</span></td><td class="mono">14 · curl smoke</td></tr>
+          <tr><td><b>brain-guard</b></td><td class="mono">agent-brain-guard</td><td><span class="grant">hnhc-brain view</span><span class="grant">neighbours-brain view</span></td><td class="mono">read, search</td><td><span class="pill muted">not minted</span></td><td class="mono">0</td></tr>
+          <tr><td><b>maya-contact-report</b></td><td class="mono">agent-maya</td><td><span class="grant e">contact-reports edit</span></td><td class="mono">read, search, create</td><td><span class="pill muted">not minted</span></td><td class="mono">0</td></tr>
+          <tr><td><b>maya-eow</b></td><td class="mono">agent-maya</td><td><span class="grant">all BS view</span><span class="grant e">Operations/EOW edit</span></td><td class="mono">read, search, create</td><td><span class="pill muted">not minted</span></td><td class="mono">0</td></tr>
+          <tr><td><b>catalina-fuse5</b></td><td class="mono">agent-catalina</td><td><span class="grant e">fuse5-brain edit</span><span class="grant d">hnhc-brain</span><span class="grant d">neighbours-brain</span></td><td class="mono">read, search, create, append</td><td><span class="pill muted">not minted</span></td><td class="mono">0</td></tr>
+          <tr><td><b>stella-sdr</b></td><td class="mono">agent-stella</td><td><span class="grant">Operations/Market view</span><span class="grant e">Operations/Pipeline edit</span><span class="grant d">hnhc-brain</span><span class="grant d">neighbours-brain</span></td><td class="mono">read, search, append</td><td><span class="pill muted">not minted</span></td><td class="mono">0</td></tr>
+          <tr><td><b>morning-brief</b></td><td class="mono">agent-morning</td><td><span class="grant">all view</span><span class="grant e">Operations/Briefs edit</span></td><td class="mono">read, search, create</td><td><span class="pill muted">not minted</span></td><td class="mono">0</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Struck grants are per member denies. A deny beats every grant, including authorship, so cross client leakage fails at the server before the guard ever runs.</p>
+  </section>
+
+  <section aria-labelledby="log-h">
+    <h2 id="log-h">Routine log <span class="n">Operations/Routines/log.md</span></h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>When</th><th>Routine</th><th>Principal</th><th>Result</th><th>Summary</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">2026-09-04 21:20</td><td><b>Bootstrap</b></td><td class="mono">clinton</td><td><span class="pill ok">OK</span></td><td>Vault assembled, guards pass, MCP write path proven on local Clinton-OS server</td></tr>
+          <tr><td class="mono">2026-09-04 20:35</td><td><b>Leakage check</b></td><td class="mono">clinton</td><td><span class="pill att">FAIL 2</span></td><td>hnhc-brain current-state line 160, Kiwanis contact. Decision owed.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="next-h">
+    <h2 id="next-h">Next actions</h2>
+    <div class="actions">
+      <button class="primary" type="button" data-copy="./deploy.sh brain.clinton-os.ca https://github.com/clinton-reid/clinton-os.git">Copy deploy command</button>
+      <button class="ghost" type="button" data-copy="claude mcp add --transport http bs-brain https://brain.clinton-os.ca/api/mcp --header &quot;Authorization: Bearer mcp_…&quot;">Copy MCP registration</button>
+      <span class="toast" id="toast" role="status" aria-live="polite"></span>
+    </div>
+  </section>
+
+  <footer>
+    <span>Clinton-OS is a fork of Baalda (Apache 2.0). Fuse5 design system. Data on this page is the bootstrap snapshot, replaced by the server feed once brain.clinton-os.ca is live.</span>
+    <span class="mono">Business Solutions · 1001232857 Ontario Inc.</span>
+  </footer>
+</div>
+
+<script>
+  document.querySelectorAll('button[data-copy]').forEach(function (b) {
+    b.addEventListener('click', async function () {
+      var t = document.getElementById('toast');
+      try { await navigator.clipboard.writeText(b.getAttribute('data-copy')); t.textContent = 'Copied.'; }
+      catch (e) { t.textContent = b.getAttribute('data-copy'); }
+      setTimeout(function(){ t.textContent = ''; }, 4000);
+    });
+  });
+</script>

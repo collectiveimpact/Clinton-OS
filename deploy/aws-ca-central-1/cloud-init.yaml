@@ -1,0 +1,26 @@
+#cloud-config
+# Ubuntu 24.04 arm64 on t4g.small. Installs Docker, clones the fork, starts the stack.
+# deploy.sh substitutes the four __VARS__ before passing this as user data.
+package_update: true
+package_upgrade: true
+packages: [git, ca-certificates, curl, unattended-upgrades]
+users:
+  - name: ubuntu
+    groups: [docker]
+runcmd:
+  - curl -fsSL https://get.docker.com | sh
+  - systemctl enable --now docker
+  - git clone --depth 1 __REPO_URL__ /opt/clinton-os
+  - cd /opt/clinton-os/deploy/aws-ca-central-1
+  - |
+    cat > .env <<ENV
+    DOMAIN=__DOMAIN__
+    ACME_EMAIL=clinton.reid@gmail.com
+    POSTGRES_PASSWORD=$(openssl rand -base64 32 | tr -d '/+=' | cut -c1-40)
+    JWT_SECRET=$(openssl rand -base64 48)
+    BACKUP_BUCKET=__BACKUP_BUCKET__
+    OPENAI_API_KEY=
+    ENV
+  - chmod 600 .env
+  - docker compose up -d --build
+  - echo "clinton-os stack started" > /var/log/clinton-os-init.done

@@ -1,0 +1,99 @@
+# Clinton-OS server, production Compose bundle for one AWS EC2 host in ca-central-1.
+# Services: Postgres 16, one shot migrate, the sync server, Caddy for automatic TLS,
+# and a nightly pg_dump shipped to S3. One public port pair (80 and 443). The sync
+# WebSocket rides HTTPS at /sync so nothing else is exposed.
+#
+#   cp .env.example .env    # set DOMAIN, POSTGRES_PASSWORD, JWT_SECRET, BACKUP_BUCKET
+#   docker compose up -d
+name: context
+
+x-server-image: &server-image
+  build:
+    context: ../..
+    dockerfile: app/apps/server/Dockerfile
+
+x-server-env: &server-env
+  NODE_ENV: production
+  DATABASE_URL: postgres://context:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/context
+  JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env, openssl rand -base64 32}
+  BETTER_AUTH_URL: https://${DOMAIN:?set DOMAIN in .env}
+  PORT: "3010"
+  SYNC_TOKEN_TTL_SECONDS: "600"
+  # Optional. Leave blank for the air gapped semantic index.
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: context
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: context
+    volumes:
+      - context_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U context -d context"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    <<: *server-image
+    command: ["node", "dist/db/migrate.js"]
+    environment: *server-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  server:
+    <<: *server-image
+    restart: unless-stopped
+    environment: *server-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    expose:
+      - "3010"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3010/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:-clinton.reid@gmail.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - server
+
+  backup:
+    image: amazon/aws-cli:2.17.0
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/backup.sh"]
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      BACKUP_BUCKET: ${BACKUP_BUCKET:?set BACKUP_BUCKET in .env}
+      AWS_DEFAULT_REGION: ca-central-1
+      # Credentials come from the EC2 instance role. Never put keys in this file.
+    volumes:
+      - ./backup.sh:/backup.sh:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  context_pgdata:
+  caddy_data:
+  caddy_config:
