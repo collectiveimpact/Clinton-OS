@@ -191,6 +191,8 @@ jobs:
           # Linux in a container. Bump the `if:` on the deps step to match.
 
     runs-on: ${{ matrix.platform }}
+    env:
+      HAS_APPLE_CERT: ${{ secrets.APPLE_CERTIFICATE != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -283,7 +285,7 @@ jobs:
       # An `if:` on the whole step cannot misfire.
 
       - name: Build, sign and notarize
-        if: steps.cfg.outputs.notarize == 'true' && secrets.APPLE_CERTIFICATE != ''
+        if: steps.cfg.outputs.notarize == 'true' && env.HAS_APPLE_CERT == 'true'
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -317,7 +319,7 @@ jobs:
       # (it verifies the minisign signature, not Apple's ticket); only fresh
       # downloads prompt, and right-click → Open clears it.
       - name: Build and sign (notarization skipped)
-        if: steps.cfg.outputs.notarize != 'true' && secrets.APPLE_CERTIFICATE != ''
+        if: steps.cfg.outputs.notarize != 'true' && env.HAS_APPLE_CERT == 'true'
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -343,7 +345,7 @@ jobs:
       # ad hoc signs the bundle. First launch needs right click, Open once.
       # The updater signature (minisign) is still applied, so auto update works.
       - name: Build, ad hoc signed (no Apple secrets present)
-        if: secrets.APPLE_CERTIFICATE == ''
+        if: env.HAS_APPLE_CERT != 'true'
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
